@@ -96,9 +96,9 @@ body {
 				<span class="h2">{{day|date:'EEEE, d. MMMM'}}</span> <span class="pull-right"><a href="/reports/daily/{{day | date:'yyyy-MM-dd'}}.pdf">Download</a></span>
 			</div>
 			<div class="col-md-6 col-xs-12" data-ng-repeat="id in [0,1,2,3,4,5,6]">
-				<div class = "media" data-ng-show="menus[day][id].title != undefined" data-ng-class="{'bg-success': getOrderDetail($parent.$index, (id+1)).amount>0}" style="height: 175px">
+				<div class = "media" data-ng-show="menus[day][id].title != undefined" data-ng-class="{'bg-success': getOrderDetail($parent.$index, (id+1)).amount>0}">
 				   <a class = "pull-left">
-				      <img class = "media-object" data-ng-src = "https://shop.meyer-menue.de/assets/image/{{menus[day][id].menuimage}}" alt = "{{menus[day][id].title}}" width="300" height="156">
+				      <img class = "media-object" data-ng-src = "https://shop.meyer-menue.de/assets/image/{{menus[day][id].menuimage}}" alt = "{{menus[day][id].title}}" width="345" height="179">
 				   </a>
 				   <div class = "media-body">
 				      <h4 class = "media-heading">({{menus[day][id].planpos}}) {{menus[day][id].title}}</h4>
