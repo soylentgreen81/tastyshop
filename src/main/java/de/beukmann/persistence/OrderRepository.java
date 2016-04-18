@@ -35,4 +35,7 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Integ
 	@Modifying
 	@Query("delete from Order o where o.username = :username and o.orderDate between :orderDateFrom and :orderDateTo")
 	int deleteByUsernameAndOrderDateBetween(@Param("username") String username, @Param("orderDateFrom") LocalDate orderDateFrom, @Param("orderDateTo") LocalDate orderDateTo );
+	
+	
+	List<Order> findByOrderDate(LocalDate date);
 }

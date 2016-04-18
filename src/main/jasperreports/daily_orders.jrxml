@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.1.final using JasperReports Library version 6.2.1  -->
+<!-- 2016-04-19T00:30:45 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="daily_orders" columnCount="4" pageWidth="595" pageHeight="842" columnWidth="138" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="834a15e7-63c5-4db6-a653-34f924be9fc3">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Postgres/Meyemenu"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="ORDER_DATE" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[select orders.order_Date, orders.username, order_details.amount, order_details.menu_position 
+from orders left join order_details on orders.id = order_details.order_id
+where amount > 0
+and order_date =  $P{ORDER_DATE} 
+order by order_details.menu_position]]>
+	</queryString>
+	<field name="order_date" class="java.sql.Date"/>
+	<field name="username" class="java.lang.String"/>
+	<field name="amount" class="java.lang.Integer"/>
+	<field name="menu_position" class="java.lang.String"/>
+	<group name="MENU_POSITION">
+		<groupExpression><![CDATA[$F{menu_position}]]></groupExpression>
+		<groupHeader>
+			<band height="31">
+				<textField>
+					<reportElement x="0" y="0" width="140" height="31" uuid="bc8ed504-3e5f-4f44-b843-2365ed8224ae"/>
+					<textElement>
+						<font size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{menu_position}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="50">
+				<printWhenExpression><![CDATA[Boolean.FALSE]]></printWhenExpression>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch">
+			<printWhenExpression><![CDATA[Boolean.FALSE]]></printWhenExpression>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="40" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="380" height="40" uuid="356186ae-4a36-4f59-8267-320c163494a3"/>
+				<textElement>
+					<font size="22" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Bestellübersicht"]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="450" y="0" width="100" height="30" uuid="d0cacd3b-7936-4060-885d-3339e3354f18"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$P{ORDER_DATE}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch">
+			<printWhenExpression><![CDATA[Boolean.FALSE]]></printWhenExpression>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="100" height="20" uuid="e330d193-480a-4f0d-923d-0af8f8eda4a5"/>
+				<textFieldExpression><![CDATA[$F{username}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="100" y="0" width="40" height="20" uuid="dbce1260-9c15-4958-bac6-c5dcf4b8375a"/>
+				<textFieldExpression><![CDATA["x " + $F{amount}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch">
+			<printWhenExpression><![CDATA[Boolean.FALSE]]></printWhenExpression>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch">
+			<printWhenExpression><![CDATA[Boolean.FALSE]]></printWhenExpression>
+		</band>
+	</summary>
+</jasperReport>

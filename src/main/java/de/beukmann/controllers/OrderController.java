@@ -73,8 +73,9 @@ public class OrderController {
 		if (!Arrays.stream(weekdays).allMatch(weekday -> data.stream().anyMatch(x-> x.getOrderDate().isEqual(weekday)))){
 			throw new WebServiceException("Invalid order data");
 		}
-		orderRepository.deleteByUsernameAndOrderDateBetween(username, weekdays[0], weekdays[6]);
-		for (Order order : data){
+		List<Order> orders = orderRepository.findByUsernameAndOrderDateBetweenOrderByOrderDate(username, weekdays[0], weekdays[6]);
+		Order.merge(orders, data);
+		for (Order order : orders){
 			order.setUsername(username);
 			orderRepository.save(order);
 		}

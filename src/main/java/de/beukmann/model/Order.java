@@ -2,18 +2,26 @@ package de.beukmann.model;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.MapKey;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import de.beukmann.config.LocalDatePersistenceConverter;
 
@@ -21,37 +29,33 @@ import de.beukmann.config.LocalDatePersistenceConverter;
 @Table(name = "ORDERS", uniqueConstraints = { @UniqueConstraint(columnNames = { "orderDate", "username" }) })
 public class Order {
 
-	public static List<Order> getOrdersFromDates(LocalDate... dates) {
-		List<Order> orders = new ArrayList<Order>(dates.length);
-		for (LocalDate date : dates) {
-			orders.add(getOrderFromDate(date));
-		}
-		return orders;
+	private Order(){		
 	}
-
-	public static Order getOrderFromDate(LocalDate date) {
-
-		Order newOrder = new Order();
-		newOrder.setOrderDate(date);
-		return newOrder;
-	}
-
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	@JsonIgnore
 	private int id;
+	
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@Convert(converter = LocalDatePersistenceConverter.class)
 	private LocalDate orderDate;
-	private boolean menu1;
-	private boolean menu2;
-	private boolean menu3;
-	private boolean menu4;
-	private boolean menu5;
-	private boolean menu6;
+	
+	@OneToMany(mappedBy="order", orphanRemoval = true, cascade=CascadeType.ALL)
+	@MapKey(name="menuPosition")
+	@JsonManagedReference
+	private Map<String, OrderDetail> orderDetails;
 	
 	@JsonIgnore
 	private String username;
+
+	private boolean isOrdered;
+	
+	@Transient
+	public boolean isPersistent(){
+		return id != 0;
+	}
+
 
 	public int getId() {
 		return id;
@@ -69,53 +73,8 @@ public class Order {
 		this.orderDate = orderDate;
 	}
 
-	public boolean isMenu1() {
-		return menu1;
-	}
 
-	public void setMenu1(boolean menu1) {
-		this.menu1 = menu1;
-	}
 
-	public boolean isMenu2() {
-		return menu2;
-	}
-
-	public void setMenu2(boolean menu2) {
-		this.menu2 = menu2;
-	}
-
-	public boolean isMenu3() {
-		return menu3;
-	}
-
-	public void setMenu3(boolean menu3) {
-		this.menu3 = menu3;
-	}
-
-	public boolean isMenu4() {
-		return menu4;
-	}
-
-	public void setMenu4(boolean menu4) {
-		this.menu4 = menu4;
-	}
-
-	public boolean isMenu5() {
-		return menu5;
-	}
-
-	public void setMenu5(boolean menu5) {
-		this.menu5 = menu5;
-	}
-
-	public boolean isMenu6() {
-		return menu6;
-	}
-
-	public void setMenu6(boolean menu6) {
-		this.menu6 = menu6;
-	}
 
 	public String getUsername() {
 		return username;
@@ -124,11 +83,72 @@ public class Order {
 	public void setUsername(String username) {
 		this.username = username;
 	}
+	
 
-	@Override
-	public String toString() {
-		return "Order [id=" + id + ", orderDate=" + orderDate + ", menu1=" + menu1 + ", menu2=" + menu2 + ", menu3="
-				+ menu3 + ", menu4=" + menu4 + ", menu5=" + menu5 + ", menu6=" + menu6 + ", username=" + username + "]";
+	public boolean isOrdered() {
+		return isOrdered;
+	}
+
+	public void setOrdered(boolean isOrdered) {
+		this.isOrdered = isOrdered;
+	}
+	
+	public Map<String, OrderDetail> getOrderDetails() {
+		return orderDetails;
+	}
+
+	public void setOrderDetails(Map<String, OrderDetail> orderDetails) {
+		this.orderDetails = orderDetails;
+	}
+
+	
+
+	public static List<Order> getOrdersFromDates(LocalDate... dates) {
+		List<Order> orders = new ArrayList<Order>(dates.length);
+		for (LocalDate date : dates) {
+			orders.add(getOrderFromDate(date));
+		}
+		return orders;
+	}
+
+	private static final String[] MENU_IDS = {"MENU_1", "MENU_2", "MENU_3", "MENU_4", "MENU_5", "MENU_6", "MENU_7"};  
+	
+	public static Order getOrderFromDate(LocalDate date) {
+
+		Order newOrder = new Order();
+		newOrder.setOrderDate(date);
+		newOrder.setOrderDetails(new HashMap<String, OrderDetail>());
+		for (String menuId : MENU_IDS){
+			OrderDetail newDetail = new OrderDetail();
+			newDetail.setMenuPosition(menuId);
+			newDetail.setAmount(0);
+			newDetail.setOrder(newOrder);
+			newOrder.getOrderDetails().put(menuId, newDetail);
+		}
+		return newOrder;
+	}
+	public static void merge(List<Order> base, List<Order> newData){
+		//Sync existing orders
+		for (Order order : base){
+			if (!order.isOrdered){
+				Optional<Order> newEntry = newData.stream().filter(o -> o.orderDate.isEqual(order.orderDate)).findFirst();
+				if (newEntry.isPresent()){
+					order.copyMenus(newEntry.get());
+				}
+			}
+		}
+		//Add missing orders
+		newData.stream().filter(o -> base.stream().noneMatch( x-> x.orderDate.isEqual(o.orderDate))).forEach(x -> base.add(x));
+	}
+	
+	public void copyMenus(Order other){
+		if (this.isOrdered)
+			throw new IllegalArgumentException("Cannot overwrite ordered entry");
+		for (String key : orderDetails.keySet()){
+			final OrderDetail thisDetail = orderDetails.get(key);
+			final OrderDetail otherDetail = other.getOrderDetails().get(key);
+			thisDetail.setAmount(otherDetail.getAmount());
+		}
 	}
 	
 }

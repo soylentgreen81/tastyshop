@@ -5,6 +5,7 @@
 		<js>webjar:jquery/2.2.3/jquery.min.js</js>
 		<js>webjar:bootstrap/3.3.6/js/bootstrap.min.js</js>
 		<js>webjar:angularjs/1.5.3/angular.min.js</js>
+		<js>webjar:angularjs/1.5.3/i18n/angular-locale_de-de.js</js>
 		<js>webjar:angularjs/1.5.3/angular-route.min.js</js>
 		<js>webjar:angularjs/1.5.3/angular-cookies.min.js</js>
 	</group>

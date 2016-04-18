@@ -1,7 +1,10 @@
 <!doctype html>
 <html>
 <head>
-<title>Meyer-Menü Shop</title>
+<title>Meyer-Menue Shop</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <link href="css/angular-bootstrap.css" rel="stylesheet">
 <style type="text/css">
 [ng\:cloak], [ng-cloak], .ng-cloak {
@@ -14,17 +17,30 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
-	z-index: 1000;
-	background-color: grey;
+	z-index: 9000;
+	background-color: #888888;
 	opacity: .8;
+}
+.ajax-loader {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -32px; /* -1 * image width / 2 */
+    margin-top: -32px;  /* -1 * image height / 2 */
+    display: block;     
+}
+body {
+  padding-top: 70px;
 }
 </style>
 </head>
 
 <body data-ng-app="meyershop" data-ng-controller="home">
-	<div id="loading"></div>
+	<div id="loading">
+		<img src="images/spinner.gif" class="ajax-loader">
+	</div>
 
-	<nav class="navbar navbar-inverse">
+	<nav class="navbar navbar-inverse navbar-fixed-top">
 		<div class="container-fluid">
 			<div class="navbar-header">
 				<button type="button" class="navbar-toggle collapsed"
@@ -34,22 +50,29 @@
 						class="icon-bar"></span> <span class="icon-bar"></span> <span
 						class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="#">Meyer Menü Shop</a>
+				<a class="navbar-brand" href="#">Meyer Men&uuml; Shop</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<ul class="nav navbar-nav">
-					<li><p class="navbar-btn">
+					<li><p class="navbar-btn">					
+						<div class="btn-group">
+						<button type="button" data-ng-click="previousWeek()" class="btn btn-primary">
+							<span class="glyphicon glyphicon-step-backward"></span>
+						</button>
+						<button type="button" data-ng-click="currentWeek()" class="btn btn-primary">Woche</button>
+						<button type="button" data-ng-click="nextWeek()" class="btn btn-primary">
+							<span class="glyphicon glyphicon-step-forward"></span>
+						</button>					
+						</div></p>
+					</li>
+					<li><a href="#menu-day-0">Montag</a></li>
+					<li><a href="#menu-day-1">Dienstag</a></li>
+					<li><a href="#menu-day-2">Mittwoch</a></li>
+					<li><a href="#menu-day-3">Donnerstag</a></li>
+					<li><a href="#menu-day-4">Freitag</a></li>
+					<li><a href="#menu-day-5">Samstag</a></li>
+					<li><a href="#menu-day-6">Sonntag</a></li>
 					
-					<div class="btn-group">
-					<button type="button" data-ng-click="previousWeek()" class="btn btn-primary">
-						<span class="glyphicon glyphicon-step-backward"></span>
-					</button>
-					<button type="button" data-ng-click="currentWeek()" class="btn btn-primary">Woche</button>
-					<button type="button" data-ng-click="nextWeek()" class="btn btn-primary">
-						<span class="glyphicon glyphicon-step-forward"></span>
-					</button>					
-					</div>
-					</p></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 				<li><p class="navbar-btn">
@@ -58,38 +81,38 @@
 				</li>	
 				</ul>
 			</div>
-			<!--/.nav-collapse -->
-		</div>
-		<!--/.container-fluid -->
-	</nav>
-	<div class="container" >
-		<div class="row">
-			<div class="col-md-12">
-				
-				<h2>KW: {{week}} / {{year}}</h2>
-			</div>
+			
 		</div>
 		
-		<div class="row" style="padding-top: 20px;">
-					<div class="table-responsive">
-
-						<table class="table table-striped" data-ng-show="days.length > 0">
-							<tr>
-								<th></th>
-								<th data-ng-repeat="day in days">{{day|date:'EEE, d.MMM'}}</th>
-							</tr>
-							<tr data-ng-repeat="id in [0,1,2,3,4,5,6]">
-								<th>{{id+1}}</th>
-								<td data-ng-repeat="day in days track by $index">
-									<div data-ng-show="menus[day][id].title != undefined">
-										<input type="checkbox" id="{{day}}-{{id}}"
-											data-ng-model="orders[$index]['menu'+(id+1)]" /> <label
-											for="{{day}}-{{id}}" style="font-weight: normal;">{{menus[day][id].title}}</label>
-									</div>
-								</td>
-							</tr>
-						</table>
+	</nav>
+	<div class="container" >
+		<div class="row ng-cloak">
+			<div class="col-md-12">
+				<h1>Speiseplan f&uuml;r Kalenderwoche: {{week}} / {{year}}</h1>
+			</div>
+		</div>
+		<div class="row ng-cloak" data-ng-repeat="day in days track by $index" id="menu-day-{{$index}}" style="padding-top:60px;">			
+			<div class="col-xs-12">
+				<span class="h2">{{day|date:'EEEE, d. MMMM'}}</span> <span class="pull-right"><a href="/reports/daily/{{day | date:'yyyy-MM-dd'}}.pdf">Download</a></span>
+			</div>
+			<div class="col-md-6 col-xs-12" data-ng-repeat="id in [0,1,2,3,4,5,6]">
+				<div class = "media" data-ng-show="menus[day][id].title != undefined" data-ng-class="{'bg-success': orders[$parent.$index]['menu'+(id+1)]}">
+				   <a class = "pull-left">
+				      <img class = "media-object" data-ng-src = "https://shop.meyer-menue.de/assets/image/{{menus[day][id].menuimage}}" alt = "{{menus[day][id].title}}" width="345" height="179">
+				   </a>
+				   <div class = "media-body">
+				      <h4 class = "media-heading">({{menus[day][id].planpos}}) {{menus[day][id].title}}</h4>
+				      {{menus[day][id].description}} 
+					<div class="well-sm">
+						<div class="btn-group">
+							<button type="button" class="btn btn-xs btn-danger" data-ng-click="decrease($parent.$index, (id+1))"><span class="glyphicon glyphicon-minus"></span></button>
+							<button type="button" class="btn btn-xs btn-success"  data-ng-click="increase($parent.$index, (id+1))"><span class="glyphicon glyphicon-plus"></span></button>
+						</div>
+						<strong>Menge:</strong> {{orders[$parent.$index].orderDetails['MENU_'+(id+1)].amount}}
 					</div>
+				   </div>
+				</div>
+			</div>
 		</div>
 	</div>
 	

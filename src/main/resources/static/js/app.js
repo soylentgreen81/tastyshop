@@ -38,10 +38,35 @@ app.controller('home', ['$scope','$http','$q', function($scope, $http, $q) {
 				}
 		);
 	};
+	$scope.increase = function(dayId, menuId){
+		var orderDetail = $scope.getOrderDetail(dayId, menuId);
+		orderDetail.amount++;
+	};
+	$scope.decrease = function(dayId, menuId){
+		var orderDetail = $scope.getOrderDetail(dayId, menuId);
+		if (orderDetail.amount > 0){
+			orderDetail.amount--;
+		}
+
+	};
+	$scope.getOrderDetail = function(dayId, menuId){
+		return $scope.orders[dayId].orderDetails['MENU_' + menuId]; 
+	}
 	$scope.saveData = function(){
 		console.log($scope.orders);
+		$('#loading').show();
+		
 		var savePromise = $http.post('orders/' + $scope.year + '/' + $scope.week, $scope.orders);
-		savePromise.then(function (e){console.log("Done saving")});
+		savePromise.then(function (e){
+				$('#loading').hide();	
+				console.log('Alles okay');
+				console.log(e);
+			}, 
+			function(e){
+				$('#loading').hide();
+				console.log('Fehler beim Speichern');
+				console.log(e);
+			});
 	};
 	$scope.currentWeek = function(){
 		var today = new Date();
