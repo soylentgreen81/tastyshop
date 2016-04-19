@@ -2,86 +2,100 @@
 
 var app = angular.module('meyershop', []);
 
-Date.prototype.getWeekNumber = function(){
-    var d = new Date(+this);
-    d.setHours(0,0,0);
-    d.setDate(d.getDate()+4-(d.getDay()||7));
-    return Math.ceil((((d-new Date(d.getFullYear(),0,1))/8.64e7)+1)/7);
-};
 
-app.controller('home', ['$scope','$http','$q', function($scope, $http, $q) {
+app.controller('home', [
+		'$scope',
+		'$http',
+		'$q',
+		function($scope, $http, $q) {
 
-	$scope.menus = {};
-	$scope.orders = {};
-	$scope.days = [];
-	
-	 $scope.loadData = function(){
-		 $('#loading').show();
-		 var menuPromise = $http.get('lecker/menu/' + $scope.year + '/' + $scope.week),
-		    orderPromise = $http.get('orders/' + $scope.year + '/' + $scope.week);
-		$scope.menus = {};
-		$scope.days = [];
-		$q.all([menuPromise, orderPromise]).then(
-				function(data){
+			$scope.menus = {};
+			$scope.orders = {};
+			$scope.days = [];
+			
+			$scope.increase = function(dayId, menuId) {
+				var orderDetail = $scope.getOrderDetail(dayId, menuId);
+				$scope.setOrderDetail(dayId, menuId, orderDetail + 1);
+			};
+			$scope.decrease = function(dayId, menuId) {
+				var orderDetail = $scope.getOrderDetail(dayId, menuId);
+				if (orderDetail > 0) {
+					$scope.setOrderDetail(dayId, menuId, orderDetail - 1);
+				}
+			};
+			
+			$scope.getOrderDetail = function(dayId, menuId) {
+				return $scope.orders[dayId].orderDetails[menuId];
+			}
+			$scope.setOrderDetail = function(dayId, menuId, value) {
+				$scope.orders[dayId].orderDetails[menuId] = value;
+			}
+			
+			$scope.saveData = function() {
+				console.log($scope.orders);
+				$('#loading').show();
+
+				var savePromise = $http.post('orders/' + $scope.year + '/'
+						+ $scope.week, $scope.orders);
+				savePromise.then(function(e) {
+					$('#loading').hide();
+					console.log('Alles okay');
+					console.log(e);
+				}, function(e) {
+					$('#loading').hide();
+					console.log('Fehler beim Speichern');
+					console.log(e);
+				});
+			};
+			$scope.currentWeek = function() {
+				var today = new Date();
+				loadWeek(today.getMonday());
+			}
+			
+			$scope.nextWeek = function() {
+				loadWeek($scope.monday.addDays(7));
+			};
+			$scope.previousWeek = function() {
+				loadWeek($scope.monday.addDays(-7));
+			};
+			$scope.currentWeek();
+			
+			/*private functions*/
+			function loadWeek(monday){
+				$scope.monday = monday;
+				$scope.week = monday.getWeekNumber();
+				$scope.year = monday.getFullYear();
+				loadData();
+			}
+			
+			function loadData() {
+				$('#loading').show();
+				$scope.menus = {};
+				$scope.days = [];
+				var menuPromise = $http.get('lecker/menu/' + $scope.year + '/'
+						+ $scope.week), orderPromise = $http.get('orders/'
+						+ $scope.year + '/' + $scope.week);
+				$q.all([ menuPromise, orderPromise ]).then(function(data) {
 					var menuData = data[0].data;
 					var orderData = data[1].data;
-					var days = menuData.map(function(e){ return e.date});
-			    	days = days.filter(function(v,i){return days.indexOf(v) == i;});
-			    	var dayMenuMap = {};
-			    	days.forEach(function(day){
-			    		dayMenuMap[day] = menuData.filter(function (v) {return v.date == day});
-			    	});
-			    	$scope.days = days;
-			    	$scope.menus = dayMenuMap;
-			    	$scope.orders = orderData;
-			    	$('#loading').hide(); 
-				}
-		);
-	};
-	$scope.increase = function(dayId, menuId){
-		var orderDetail = $scope.getOrderDetail(dayId, menuId);
-		orderDetail.amount++;
-	};
-	$scope.decrease = function(dayId, menuId){
-		var orderDetail = $scope.getOrderDetail(dayId, menuId);
-		if (orderDetail.amount > 0){
-			orderDetail.amount--;
-		}
+					var days = menuData.map(function(e) {
+						return e.date
+					});
+					days = days.filter(function(v, i) {
+						return days.indexOf(v) == i;
+					});
+					var dayMenuMap = {};
+					days.forEach(function(day) {
+						dayMenuMap[day] = menuData.filter(function(v) {
+							return v.date == day
+						});
+					});
+					$scope.days = days;
+					$scope.menus = dayMenuMap;
+					$scope.orders = orderData;
+					$('#loading').hide();
+				});
+			};
 
-	};
-	$scope.getOrderDetail = function(dayId, menuId){
-		return $scope.orders[dayId].orderDetails['MENU_' + menuId]; 
-	}
-	$scope.saveData = function(){
-		console.log($scope.orders);
-		$('#loading').show();
-		
-		var savePromise = $http.post('orders/' + $scope.year + '/' + $scope.week, $scope.orders);
-		savePromise.then(function (e){
-				$('#loading').hide();	
-				console.log('Alles okay');
-				console.log(e);
-			}, 
-			function(e){
-				$('#loading').hide();
-				console.log('Fehler beim Speichern');
-				console.log(e);
-			});
-	};
-	$scope.currentWeek = function(){
-		var today = new Date();
-		$scope.week = today.getWeekNumber();
-		$scope.year = today.getFullYear();
-		$scope.loadData();
-	}
-	$scope.nextWeek = function(){
-		 $scope.week++;
-		 $scope.loadData();
-	 };
-	 $scope.previousWeek = function(){
-		 $scope.week--;
-		 $scope.loadData();
-	 };
-	 $scope.currentWeek();
-	 
-}]);
+			
+		} ]);

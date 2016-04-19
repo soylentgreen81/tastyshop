@@ -92,11 +92,12 @@ body {
 			</div>
 		</div>
 		<div class="row ng-cloak" data-ng-repeat="day in days track by $index" id="menu-day-{{$index}}" style="padding-top:60px;">			
-			<div class="col-xs-12">
-				<span class="h2">{{day|date:'EEEE, d. MMMM'}}</span> <span class="pull-right"><a href="/reports/daily/{{day | date:'yyyy-MM-dd'}}.pdf">Download</a></span>
+			<div class="col-xs-12" style="margin-bottom: 20px;">
+				<span class="h3">{{day|date:'EEEE, d. MMMM'}}</span> <span class="pull-right">
+				<a class="btn btn-primary" href="/reports/daily/{{day | date:'yyyy-MM-dd'}}.pdf"><span class="glyphicon glyphicon-file"></span> Bestellplan</a></span>
 			</div>
 			<div class="col-md-6 col-xs-12" data-ng-repeat="id in [0,1,2,3,4,5,6]">
-				<div class = "media" data-ng-show="menus[day][id].title != undefined" data-ng-class="{'bg-success': getOrderDetail($parent.$index, (id+1)).amount>0}">
+				<div class = "media" data-ng-show="menus[day][id].title != undefined" data-ng-class="{'bg-success': getOrderDetail($parent.$index, (id+1))>0}">
 				   <a class = "pull-left">
 				      <img class = "media-object" data-ng-src = "https://shop.meyer-menue.de/assets/image/{{menus[day][id].menuimage}}" alt = "{{menus[day][id].title}}" width="345" height="179">
 				   </a>
@@ -108,14 +109,14 @@ body {
 							<button type="button" class="btn btn-xs btn-danger" data-ng-click="decrease($parent.$index, (id+1))"><span class="glyphicon glyphicon-minus"></span></button>
 							<button type="button" class="btn btn-xs btn-success"  data-ng-click="increase($parent.$index, (id+1))"><span class="glyphicon glyphicon-plus"></span></button>
 						</div>
-						<strong>Menge:</strong> {{getOrderDetail($parent.$index, (id+1)).amount}}
+						<strong>Menge:</strong> {{getOrderDetail($parent.$index, (id+1))}}
 					</div>
 				   </div>
 				</div>
 			</div>
 		</div>
 	</div>
-	
+	<script src="js/dateutils.js"></script>
 	<script src="js/angular-bootstrap.js" type="text/javascript"></script>
 	<script src="js/app.js"></script>
 </body>
