@@ -24,6 +24,9 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
+import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Future;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -48,6 +51,7 @@ public class Order {
 	
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@Convert(converter = LocalDatePersistenceConverter.class)
+	@Future
 	private LocalDate orderDate;
 
 	@JsonIgnore
@@ -62,6 +66,7 @@ public class Order {
 	private Map<Integer, Integer> orderDetails;
 
 	@JsonIgnore
+	@NotNull
 	private String username;
 
 	private boolean isOrdered;
@@ -103,10 +108,20 @@ public class Order {
 		this.isOrdered = isOrdered;
 	}
 	
+	@Transient
+	@JsonIgnore
+	@AssertTrue
+	public boolean isOrderDetailsOK(){
+		for (Integer key : orderDetails.keySet()){
+			if (key < 1 || key > MENU_COUNT)
+				return false;
+		}
+		return true;
+	}
 
 	
 	@PostLoad
-	private void fillUpMap(){
+	private void fillUpOrderDetails(){
 		for (int i=1;i<=MENU_COUNT;i++){
 			if (!orderDetails.containsKey(i)){
 				orderDetails.put(i, 0);
@@ -115,7 +130,7 @@ public class Order {
 	} 
 	@PrePersist
 	@PreUpdate
-	private void minimizeMap(){
+	private void minimizeOrderDetails(){
 		for (int i=1;i<=MENU_COUNT;i++){
 			if (orderDetails.containsKey(i) && orderDetails.get(i) <= 0){
 				orderDetails.remove(i);
@@ -144,7 +159,7 @@ public class Order {
 		Order newOrder = new Order();
 		newOrder.setOrderDate(date);
 		newOrder.setOrderDetails(new HashMap<Integer, Integer>());
-		newOrder.fillUpMap();
+		newOrder.fillUpOrderDetails();
 		return newOrder;
 	}
 

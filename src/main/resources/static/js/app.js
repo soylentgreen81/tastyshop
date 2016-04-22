@@ -1,26 +1,35 @@
 'use strict';
 
-var app = angular.module('meyershop', []);
+var app = angular.module('meyershop', ['ngAnimate', 'ui.bootstrap']);
+app.config(['$compileProvider', function ($compileProvider) {
+  $compileProvider.debugInfoEnabled(false);
+}]);
 
-
-app.controller('home', [
+app.controller('HomeController', [
 		'$scope',
 		'$http',
 		'$q',
-		function($scope, $http, $q) {
-
+		'dialogService',
+		function($scope, $http, $q, dialogService) {
+			var dirty = false;
 			$scope.menus = {};
 			$scope.orders = {};
 			$scope.days = [];
+			$scope.today = function(){
+				return new Date().toSimpleString();
+			}
+
 			
 			$scope.increase = function(dayId, menuId) {
 				var orderDetail = $scope.getOrderDetail(dayId, menuId);
 				$scope.setOrderDetail(dayId, menuId, orderDetail + 1);
+				dirty = true;
 			};
 			$scope.decrease = function(dayId, menuId) {
 				var orderDetail = $scope.getOrderDetail(dayId, menuId);
 				if (orderDetail > 0) {
 					$scope.setOrderDetail(dayId, menuId, orderDetail - 1);
+					dirty = true;
 				}
 			};
 			
@@ -38,18 +47,17 @@ app.controller('home', [
 				var savePromise = $http.post('orders/' + $scope.year + '/'
 						+ $scope.week, $scope.orders);
 				savePromise.then(function(e) {
+					dirty = false;
 					$('#loading').hide();
-					console.log('Alles okay');
-					console.log(e);
+					dialogService.showInfoDialog('Ihre Bestellung wurde erfolgreich gespeichert', 'Erfolgreich')
 				}, function(e) {
 					$('#loading').hide();
-					console.log('Fehler beim Speichern');
-					console.log(e);
+					dialogService.showInfoDialog('Fehler beim Speichern Ihrer Bestellung', 'Fehler')
 				});
 			};
 			$scope.currentWeek = function() {
-				var today = new Date();
-				loadWeek(today.getMonday());
+					var today = new Date();
+					loadWeek(today.getMonday());
 			}
 			
 			$scope.nextWeek = function() {
@@ -62,13 +70,22 @@ app.controller('home', [
 			
 			/*private functions*/
 			function loadWeek(monday){
+				if (dirty){
+					var promise = dialogService.showConfirmDialog('Bestellungen wurden für diese Woche noch nicht gespeichert. Fortfahren?', 'Nicht gespeicherte Bestellungen'); 
+					promise.then(function(result){
+						if (result===true){
+							loadData(monday);	
+						}
+					});
+				} else  {
+					loadData(monday);
+				}
+			}
+			function loadData(monday) {
 				$scope.monday = monday;
 				$scope.week = monday.getWeekNumber();
 				$scope.year = monday.getFullYear();
-				loadData();
-			}
-			
-			function loadData() {
+				$scope.month = monday.getMonth() +1;
 				$('#loading').show();
 				$scope.menus = {};
 				$scope.days = [];
@@ -93,9 +110,11 @@ app.controller('home', [
 					$scope.days = days;
 					$scope.menus = dayMenuMap;
 					$scope.orders = orderData;
+					dirty = false;
 					$('#loading').hide();
 				});
 			};
 
 			
 		} ]);
+

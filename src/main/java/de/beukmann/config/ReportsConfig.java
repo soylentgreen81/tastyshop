@@ -18,9 +18,9 @@ public class ReportsConfig {
 		InputStream jasperStream = this.getClass().getClassLoader().getResourceAsStream("daily_orders.jasper");
 		return (JasperReport) JRLoader.loadObject(jasperStream);
 	}
-	@Bean(name={"monthlyTemplate"})
+	@Bean(name={"rangeTemplate"})
 	public JasperReport monthlyTemplate() throws JRException{
-		InputStream jasperStream = this.getClass().getClassLoader().getResourceAsStream("monthly_orders.jasper");
+		InputStream jasperStream = this.getClass().getClassLoader().getResourceAsStream("range_orders.jasper");
 		return (JasperReport) JRLoader.loadObject(jasperStream);
 	}
 }

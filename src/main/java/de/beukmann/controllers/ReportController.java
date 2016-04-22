@@ -5,7 +5,6 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.beukmann.util.DateUtils;
+import de.beukmann.util.Tuple;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -42,8 +42,8 @@ public class ReportController {
 	private JasperReport dailyTemplate;
 	
 	@Autowired
-	@Qualifier("monthlyTemplate")
-	private JasperReport monthlyTemplate;
+	@Qualifier("rangeTemplate")
+	private JasperReport rangeTemplate;
 	
 	@RequestMapping(value = "daily/{date}.pdf", method = RequestMethod.GET)
 	@ResponseBody
@@ -56,19 +56,22 @@ public class ReportController {
 	
 	@RequestMapping(value = "monthly/{year}-{month}.pdf", method = RequestMethod.GET)
 	@ResponseBody
-	public void getDailyOrders(HttpServletResponse response, @PathVariable  int year, @PathVariable  int month ) throws JRException, IOException, SQLException {
+	public void getMonthlyOrders(HttpServletResponse response, @PathVariable  int year, @PathVariable  int month ) throws JRException, IOException, SQLException {
+		Tuple<Date, Date> firstLast = DateUtils.getFirstLastDayOfMonth(month, year);
 		Map<String, Object> params = new HashMap<>();
-		Calendar calendar = Calendar.getInstance();
-		calendar.set(Calendar.YEAR, year);
-		calendar.set(Calendar.MONTH, month-1);
-		calendar.set(Calendar.DAY_OF_MONTH, 1);
-		final Date start = calendar.getTime();
-		calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-		final Date end = calendar.getTime();
-		params.put("ORDER_DATE_FROM", start);
-		params.put("ORDER_DATE_TO", end);
-		JasperPrint jasperPrint = JasperFillManager.fillReport(monthlyTemplate, params, getConnection());
-		writePdf(response, jasperPrint, String.format("%d-%02d", year, month));
+		params.put("ORDER_DATE_FROM", firstLast._1);
+		params.put("ORDER_DATE_TO", firstLast._2);
+		JasperPrint jasperPrint = JasperFillManager.fillReport(rangeTemplate, params, getConnection());
+		writePdf(response, jasperPrint, String.format("monthly-%d-%02d", year, month));
+	}
+	@RequestMapping(value = "weekly/{year}-{week}.pdf", method = RequestMethod.GET)
+	public void getWekleyOrders(HttpServletResponse response, @PathVariable  int year, @PathVariable  int week) throws JRException, IOException, SQLException {
+		LocalDate[] weekdays = DateUtils.getWeek(week, year);
+		Map<String, Object> params = new HashMap<>();
+		params.put("ORDER_DATE_FROM", DateUtils.toDate(weekdays[0]));
+		params.put("ORDER_DATE_TO", DateUtils.toDate(weekdays[6]));
+		JasperPrint jasperPrint = JasperFillManager.fillReport(rangeTemplate, params, getConnection());
+		writePdf(response, jasperPrint, String.format("weekly-%d-%02d", year,week ));
 	}
 	
 	private void writePdf(HttpServletResponse response, JasperPrint jasperPrint, String filename) throws JRException, IOException{

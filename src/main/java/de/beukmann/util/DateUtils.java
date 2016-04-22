@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
 
 public class DateUtils {
 	private DateUtils(){
@@ -13,7 +11,7 @@ public class DateUtils {
 	}
 	public static LocalDate[] getWeek(int weekOfYear, int year){
 		LocalDate[] result = new LocalDate[7];
-		GregorianCalendar calender = new GregorianCalendar(Locale.getDefault());
+		Calendar calender = Calendar.getInstance();
 		calender.set(Calendar.YEAR , year);
 		calender.set(Calendar.WEEK_OF_YEAR , weekOfYear);
 		calender.set(Calendar.DAY_OF_WEEK , Calendar.MONDAY);
@@ -26,5 +24,16 @@ public class DateUtils {
 	public static Date toDate(LocalDate date){
 		return Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
 	}
+	public static Tuple<Date, Date> getFirstLastDayOfMonth(int month, int year){
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.YEAR, year);
+		calendar.set(Calendar.MONTH, month-1);
+		calendar.set(Calendar.DAY_OF_MONTH, 1);
+		final Date start = calendar.getTime();
+		calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+		final Date end = calendar.getTime();
+		return new Tuple<Date, Date>(start, end);
+	}
+	
 	
 }

@@ -3,6 +3,7 @@ package de.beukmann.controllers;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -67,15 +68,20 @@ public class OrderController {
 	public List<Order> saveOrders(@PathVariable int year, @PathVariable int weekOfYear, @RequestBody List<Order> data, Authentication auth){
 		final String username = auth.getName().toUpperCase();
 		LocalDate[] weekdays = DateUtils.getWeek(weekOfYear, year);
-		if (data.size() != 7){
-			throw new WebServiceException("Invalid number of dates");
-		}
 		if (!Arrays.stream(weekdays).allMatch(weekday -> data.stream().anyMatch(x-> x.getOrderDate().isEqual(weekday)))){
 			throw new WebServiceException("Invalid order data");
 		}
-		List<Order> orders = orderRepository.findByUsernameAndOrderDateBetweenOrderByOrderDate(username, weekdays[0], weekdays[6]);
+		final LocalDate now = LocalDate.now();
+		final LocalDate tomorrow = now.plusDays(1);
+		final LocalDate start =  weekdays[0].isAfter(now) ? weekdays[0] : tomorrow;
+		final LocalDate end = weekdays[6];
+		//Just load future orders
+		List<Order> orders = orderRepository.findByUsernameAndOrderDateBetweenOrderByOrderDate(username, start, end);
 		Order.merge(orders, data);
-		for (Order order : orders){
+		//Just try to save future orders
+		Iterator<Order> orderIterator = orders.stream().filter(x->x.getOrderDate().isAfter(now)).iterator();
+		while(orderIterator.hasNext()){
+			Order order = orderIterator.next();
 			order.setUsername(username);
 			orderRepository.save(order);
 		}

@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html data-ng-app="meyershop" >
 <head>
 <title>Meyer-Menue Shop</title>
 
@@ -32,14 +32,40 @@
 body {
   padding-top: 70px;
 }
+
+
 </style>
 </head>
 
-<body data-ng-app="meyershop" data-ng-controller="home">
+<body data-ng-controller="HomeController">
 	<div id="loading">
 		<img src="images/spinner.gif" class="ajax-loader">
 	</div>
-
+	<script type="text/ng-template" id="infoDialog">
+    	<div class="modal-header">
+       		<button type="button" ng-click="cancel()" class="close">&times;</button>
+      		<h4 class="modal-title">{{title}}</h4>
+    	</div>
+    	<div class="modal-body">
+      		{{message}}
+    	</div>
+    	<div class="modal-footer">
+      		<button class="btn btn-primary" type="button" ng-click="cancel()">Schliessen</button>
+    	</div>
+  	</script>
+	<script type="text/ng-template" id="confirmDialog">
+    	<div class="modal-header">
+       		<button type="button" ng-click="cancel()" class="close">&times;</button>
+      		<h4 class="modal-title">{{title}}</h4>
+    	</div>
+    	<div class="modal-body">
+      		{{message}}
+    	</div>
+    	<div class="modal-footer">
+      		<button class="btn btn-success" type="button" ng-click="ok()">OK</button>
+      		<button class="btn btn-danger" type="button" ng-click="cancel()">Abbrechen</button>
+    	</div>
+  </script>
 	<nav class="navbar navbar-inverse navbar-fixed-top">
 		<div class="container-fluid">
 			<div class="navbar-header">
@@ -72,8 +98,16 @@ body {
 					<li><a href="#menu-day-4">Freitag</a></li>
 					<li><a href="#menu-day-5">Samstag</a></li>
 					<li><a href="#menu-day-6">Sonntag</a></li>
-					
+					<li class="dropdown">
+                		<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Berichte <span class="caret"></span></a>
+                		<ul class="dropdown-menu">
+                  		<li><a href="/reports/monthly/{{year}}-{{month | numberFixedLen:2}}.pdf">Monats&uuml;bersicht</a></li>
+                  		<li><a href="/reports/weekly/{{year}}-{{week| numberFixedLen:2}}.pdf"">Wochen&uuml;bersicht</a></li>
+                		</ul>
+                		
+              		</li>
 				</ul>
+				
 				<ul class="nav navbar-nav navbar-right">
 				<li><p class="navbar-btn">
 					<button type="button" data-ng-click="saveData()" class="btn btn-success"><span class="glyphicon glyphicon-floppy-save"></span> Bestellung speichern</button>
@@ -105,9 +139,9 @@ body {
 				      <h4 class = "media-heading">({{menus[day][id].planpos}}) {{menus[day][id].title}}</h4>
 				      {{menus[day][id].description}} 
 					<div class="well-sm">
-						<div class="btn-group">
-							<button type="button" class="btn btn-xs btn-danger" data-ng-click="decrease($parent.$index, (id+1))"><span class="glyphicon glyphicon-minus"></span></button>
-							<button type="button" class="btn btn-xs btn-success"  data-ng-click="increase($parent.$index, (id+1))"><span class="glyphicon glyphicon-plus"></span></button>
+						<div class="btn-group" >
+							<button type="button" class="btn btn-xs btn-danger" data-ng-click="decrease($parent.$index, (id+1))" data-ng-disabled="day <= today()"><span class="glyphicon glyphicon-minus"></span></button>
+							<button type="button" class="btn btn-xs btn-success"  data-ng-click="increase($parent.$index, (id+1))" data-ng-disabled="day <= today()"><span class="glyphicon glyphicon-plus"></span></button>
 						</div>
 						<strong>Menge:</strong> {{getOrderDetail($parent.$index, (id+1))}}
 					</div>
@@ -119,6 +153,7 @@ body {
 	<script src="js/dateutils.js"></script>
 	<script src="js/angular-bootstrap.js" type="text/javascript"></script>
 	<script src="js/app.js"></script>
+	<script src="js/services.js"></script>
 </body>
 </html>
 	

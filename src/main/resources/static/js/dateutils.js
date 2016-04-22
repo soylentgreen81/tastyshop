@@ -22,3 +22,10 @@ Date.prototype.getMonday = function() {
 	else
 		return this;
 }
+Date.prototype.toSimpleString = function() {
+	var month = (this.getMonth() < 9 ? '0' : '')+ (this.getMonth() +1);
+	var day = (this.getDate() < 10 ? '0' : '') + this.getDate();
+	var year = this.getFullYear();
+	return year + "-" + month + "-" + day;
+}
+

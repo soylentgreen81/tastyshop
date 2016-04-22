@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.1.0.final using JasperReports Library version 6.1.0  -->
-<!-- 2016-04-19T17:10:40 -->
+<!-- 2016-04-22T11:46:12 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="daily_orders" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="monthly_orders" uuid="834a15e7-63c5-4db6-a653-34f924be9fc3">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -112,7 +112,7 @@ group by username, order_date]]>
 	<summary>
 		<band height="261" splitType="Stretch">
 			<crosstab>
-				<reportElement x="0" y="1" width="555" height="260" uuid="b734939f-e39b-42c3-959b-357b00c79396"/>
+				<reportElement x="0" y="1" width="800" height="260" uuid="b734939f-e39b-42c3-959b-357b00c79396"/>
 				<rowGroup name="username1" width="60" totalPosition="End">
 					<bucket class="java.lang.String">
 						<bucketExpression><![CDATA[$F{username}]]></bucketExpression>
